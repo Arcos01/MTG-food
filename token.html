@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Food and Fellowship Token Tracker</title>
+    <!-- Load Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Load Inter font -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <style>
+        /* Custom styles */
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        /* Hide scrollbar for aesthetics */
+        body::-webkit-scrollbar {
+            display: none;
+        }
+        /* Custom focus rings */
+        button:focus, input:focus {
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.5); /* Indigo-500 with 50% opacity */
+        }
+        /* Simple transition for buttons */
+        button {
+            transition: all 0.15s ease-in-out;
+        }
+        /* Remove number input spinners */
+        input[type="text"] {
+            -moz-appearance: textfield;
+        }
+    </style>
+</head>
+<body class="bg-gray-900 text-white min-h-screen p-4 md:p-8">
+
+    <div class="max-w-7xl mx-auto">
+        
+        <!-- Header -->
+        <header class="flex flex-col md:flex-row justify-between items-center gap-4 mb-8">
+            <h1 class="text-3xl md:text-4xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 to-purple-500">
+                Food and Fellowship Token Tracker
+            </h1>
+            
+            <!-- Controls -->
+            <div class="flex items-center gap-3">
+                
+                <!-- Functions Dropdown -->
+                <div class="relative">
+                    <button id="dropdown-btn" class="flex items-center gap-2 bg-gray-800 hover:bg-gray-700 text-white font-medium py-2 px-4 rounded-lg shadow-md">
+                        <span>Functions</span>
+                        <!-- Heroicon: chevron-down -->
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                            <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" />
+                        </svg>
+                    </button>
+                    
+                    <!-- Dropdown Menu -->
+                    <div id="dropdown-menu" class="hidden absolute right-0 mt-2 w-64 bg-gray-800 border border-gray-700 rounded-lg shadow-xl z-10 p-4">
+                        <ul class="space-y-3">
+                            <li class="flex items-center justify-between">
+                                <label for="academy-toggle" class="text-gray-200">Academy Manufacturer</label>
+                                <input id="academy-toggle" type="checkbox" class="h-5 w-5 rounded bg-gray-700 border-gray-600 text-indigo-500 focus:ring-indigo-500 focus:ring-2">
+                            </li>
+                            <li class="flex items-center justify-between">
+                                <label for="x2-toggle" class="text-gray-200">Token x2</label>
+                                <input id="x2-toggle" type="checkbox" class="h-5 w-5 rounded bg-gray-700 border-gray-600 text-indigo-500 focus:ring-indigo-500 focus:ring-2">
+                            </li>
+                            <li class="flex items-center justify-between">
+                                <label for="x4-toggle" class="text-gray-200">Token x4</label>
+                                <input id="x4-toggle" type="checkbox" class="h-5 w-5 rounded bg-gray-700 border-gray-600 text-indigo-500 focus:ring-indigo-500 focus:ring-2">
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+                
+                <!-- Add Token Button -->
+                <button id="add-token-btn" class="bg-indigo-600 hover:bg-indigo-500 text-white font-medium py-2 px-4 rounded-lg shadow-md flex items-center gap-2">
+                    <!-- Heroicon: plus -->
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                        <path fill-rule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clip-rule="evenodd" />
+                    </svg>
+                    <span>Add Token</span>
+                </button>
+            </div>
+        </header>
+        
+        <!-- Token Grid -->
+        <main id="token-container" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            <!-- Token cards will be dynamically inserted here -->
+        </main>
+
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // --- STATE ---
+            let tokens = [
+                { id: 1, name: "Food", count: 0 },
+                { id: 2, name: "Clue", count: 0 },
+                { id: 3, name: "Treasure", count: 0 },
+                { id: 4, name: "Token", count: 0 }
+            ];
+            let nextTokenId = 5;
+
+            let academyManufacturer = false;
+            let tokenX2 = false;
+            let tokenX4 = false;
+
+            // --- DOM Elements ---
+            const tokenContainer = document.getElementById('token-container');
+            const addTokenBtn = document.getElementById('add-token-btn');
+            const academyToggle = document.getElementById('academy-toggle');
+            const x2Toggle = document.getElementById('x2-toggle');
+            const x4Toggle = document.getElementById('x4-toggle');
+            const dropdownBtn = document.getElementById('dropdown-btn');
+            const dropdownMenu = document.getElementById('dropdown-menu');
+
+            // --- EVENT LISTENERS ---
+
+            // Dropdown visibility
+            dropdownBtn.addEventListener('click', (e) => {
+                e.stopPropagation(); // Prevent window click from firing immediately
+                dropdownMenu.classList.toggle('hidden');
+            });
+
+            // Close dropdown if clicking outside
+            window.addEventListener('click', (e) => {
+                if (!dropdownBtn.contains(e.target) && !dropdownMenu.contains(e.target)) {
+                    dropdownMenu.classList.add('hidden');
+                }
+            });
+
+            // Toggle listeners
+            academyToggle.addEventListener('change', (e) => {
+                academyManufacturer = e.target.checked;
+            });
+
+            x2Toggle.addEventListener('change', (e) => {
+                tokenX2 = e.target.checked;
+                // If x2 is checked, uncheck x4 (they are mutually exclusive)
+                if (tokenX2) {
+                    x4Toggle.checked = false;
+                    tokenX4 = false;
+                }
+            });
+
+            x4Toggle.addEventListener('change', (e) => {
+                tokenX4 = e.target.checked;
+                // If x4 is checked, uncheck x2
+                if (tokenX4) {
+                    x2Toggle.checked = false;
+                    tokenX2 = false;
+                }
+            });
+
+            // Add new token
+            addTokenBtn.addEventListener('click', () => {
+                tokens.push({ id: nextTokenId, name: `New Token`, count: 0 });
+                nextTokenId++;
+                renderTokens();
+            });
+
+            // --- CORE FUNCTIONS ---
+
+            /**
+             * Adjusts the count of a specific token and handles all special logic.
+             * @param {number} id - The ID of the token to adjust.
+             * @param {number} amount - The base amount to add (can be negative).
+             */
+            function adjustTokenCount(id, amount) {
+                const token = tokens.find(t => t.id === id);
+                if (!token) return;
+
+                let effectiveAmount = amount;
+                
+                // Only apply multipliers if we are ADDING tokens (amount > 0)
+                if (amount > 0) {
+                    if (tokenX4) {
+                        effectiveAmount = amount * 4;
+                    } else if (tokenX2) {
+                        effectiveAmount = amount * 2;
+                    }
+                }
+
+                // Store names for Academy Manufacturer logic
+                const academyNames = ["food", "clue", "treasure"];
+                const currentTokenName = token.name.toLowerCase().trim();
+
+                // Apply Academy Manufacturer logic
+                if (academyManufacturer && amount > 0 && academyNames.includes(currentTokenName)) {
+                    // We are adding one of the three types
+                    tokens.forEach(t => {
+                        const tName = t.name.toLowerCase().trim();
+                        // If it's one of the *other* academy tokens, add the same amount
+                        if (t.id !== id && academyNames.includes(tName)) {
+                            // Note: We use effectiveAmount here so the other tokens also get multipliers
+                            t.count = Math.max(0, t.count + effectiveAmount);
+                        }
+                    });
+                }
+
+                // Finally, apply the change to the current token
+                token.count = Math.max(0, token.count + effectiveAmount);
+
+                // Re-render all tokens to show updated counts
+                renderTokens();
+            }
+
+            /**
+             * Updates a token's name in the state.
+             * @param {number} id - The ID of the token to update.
+             * @param {string} newName - The new name for the token.
+             */
+            function updateTokenName(id, newName) {
+                const token = tokens.find(t => t.id === id);
+                if (token) {
+                    token.name = newName;
+                }
+                // No re-render needed, the input field already holds the new value.
+                // Re-rendering would lose focus, which is bad UX.
+            }
+
+            /**
+             * Removes a token from the state and re-renders.
+             * @param {number} id - The ID of the token to remove.
+             */
+            function removeToken(id) {
+                tokens = tokens.filter(t => t.id !== id);
+                renderTokens();
+            }
+
+            /**
+             * Renders the entire list of tokens to the DOM.
+             */
+            function renderTokens() {
+                tokenContainer.innerHTML = ''; // Clear existing tokens
+                
+                if (tokens.length === 0) {
+                     tokenContainer.innerHTML = `
+                        <p class="text-gray-400 text-center col-span-full">
+                            No tokens created yet. Click "Add Token" to get started!
+                        </p>
+                     `;
+                     return;
+                }
+
+                tokens.forEach(token => {
+                    const card = document.createElement('div');
+                    card.className = 'bg-gray-800 rounded-2xl shadow-xl p-4 flex flex-col gap-4 transform transition-all duration-300 hover:scale-[1.03]';
+                    
+                    card.innerHTML = `
+                        <!-- Token Header: Name and Remove Button -->
+                        <div class="flex justify-between items-center gap-2">
+                            <input 
+                                type="text" 
+                                value="${token.name}" 
+                                class="text-xl font-bold bg-transparent border-b-2 border-gray-700 focus:border-indigo-500 text-white outline-none w-full p-1"
+                                data-id="${token.id}"
+                                aria-label="Token Name"
+                            >
+                            <button class="remove-btn text-gray-500 hover:text-red-500 font-bold text-2xl px-1 rounded-full" data-id="${token.id}" aria-label="Remove Token">
+                                &times;
+                            </button>
+                        </div>
+                        
+                        <!-- Token Count -->
+                        <div class="text-7xl font-light text-center my-4 select-none" aria-label="Current Count">
+                            ${token.count}
+                        </div>
+                        
+                        <!-- Main Controls: -1 and +1 -->
+                        <div class="flex justify-center gap-3">
+                            <button 
+                                class="adjust-btn bg-gradient-to-r from-red-600 to-red-700 hover:from-red-500 hover:to-red-600 text-white font-bold py-3 w-1/2 rounded-lg text-2xl shadow-lg" 
+                                data-id="${token.id}" 
+                                data-amount="-1" 
+                                aria-label="Subtract 1"
+                            >-</button>
+                            <button 
+                                class="adjust-btn bg-gradient-to-r from-green-600 to-green-700 hover:from-green-500 hover:to-green-600 text-white font-bold py-3 w-1/2 rounded-lg text-2xl shadow-lg" 
+                                data-id="${token.id}" 
+                                data-amount="1" 
+                                aria-label="Add 1"
+                            >+</button>
+                        </div>
+                        
+                        <!-- Secondary Controls: -10 and +10 -->
+                        <div class="flex justify-center gap-2">
+                            <button 
+                                class="adjust-btn bg-gray-700 hover:bg-gray-600 text-white font-medium py-1 px-3 rounded-md text-sm shadow" 
+                                data-id="${token.id}" 
+                                data-amount="-10" 
+                                aria-label="Subtract 10"
+                            >-10</button>
+                            <button 
+                                class="adjust-btn bg-gray-700 hover:bg-gray-600 text-white font-medium py-1 px-3 rounded-md text-sm shadow" 
+                                data-id="${token.id}" 
+                                data-amount="10" 
+                                aria-label="Add 10"
+                            >+10</button>
+                        </div>
+                    `;
+
+                    // --- Attach Event Listeners for this card ---
+                    
+                    // Name change
+                    card.querySelector('input').addEventListener('change', (e) => {
+                        updateTokenName(Number(e.target.dataset.id), e.target.value);
+                    });
+                    
+                    // Remove button
+                    card.querySelector('.remove-btn').addEventListener('click', (e) => {
+                        removeToken(Number(e.currentTarget.dataset.id));
+                    });
+                    
+                    // All +/- buttons
+                    card.querySelectorAll('.adjust-btn').forEach(btn => {
+                        btn.addEventListener('click', (e) => {
+                            adjustTokenCount(Number(e.currentTarget.dataset.id), Number(e.currentTarget.dataset.amount));
+                        });
+                    });
+                    
+                    tokenContainer.appendChild(card);
+                });
+            }
+
+            // --- Initial Render ---
+            renderTokens();
+        });
+    </script>
+</body>
+</html>
